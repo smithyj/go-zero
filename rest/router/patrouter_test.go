@@ -73,12 +73,17 @@ func TestPatRouterNotAllowed(t *testing.T) {
 	router.SetNotAllowedHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		notAllowed = true
 	}))
+	router.SetCorsHandler(nil, "localhost:3001")
 	err := router.Handle(http.MethodGet, "/a/b",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	assert.Nil(t, err)
 	r, _ := http.NewRequest(http.MethodPost, "/a/b", nil)
+	r.Header = http.Header{
+		"Origin": []string{"http://localhost:3001"},
+	}
 	w := new(mockedResponseWriter)
 	router.ServeHTTP(w, r)
+	fmt.Println(w.Header())
 	assert.True(t, notAllowed)
 }
 

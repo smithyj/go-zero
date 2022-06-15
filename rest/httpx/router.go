@@ -8,4 +8,5 @@ type Router interface {
 	Handle(method, path string, handler http.Handler) error
 	SetNotFoundHandler(handler http.Handler)
 	SetNotAllowedHandler(handler http.Handler)
+	SetCorsHandler(fn http.HandlerFunc, origins ...string)
 }

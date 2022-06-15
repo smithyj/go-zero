@@ -31,7 +31,7 @@ const (
 func NotAllowedHandler(fn func(w http.ResponseWriter), origins ...string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gw := response.NewHeaderOnceResponseWriter(w)
-		checkAndSetHeaders(gw, r, origins)
+		CheckAndSetHeaders(gw, r, origins)
 		if fn != nil {
 			fn(gw)
 		}
@@ -48,7 +48,7 @@ func NotAllowedHandler(fn func(w http.ResponseWriter), origins ...string) http.H
 func Middleware(fn func(w http.Header), origins ...string) func(http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			checkAndSetHeaders(w, r, origins)
+			CheckAndSetHeaders(w, r, origins)
 			if fn != nil {
 				fn(w.Header())
 			}
@@ -62,7 +62,7 @@ func Middleware(fn func(w http.Header), origins ...string) func(http.HandlerFunc
 	}
 }
 
-func checkAndSetHeaders(w http.ResponseWriter, r *http.Request, origins []string) {
+func CheckAndSetHeaders(w http.ResponseWriter, r *http.Request, origins []string) {
 	setVaryHeaders(w, r)
 
 	if len(origins) == 0 {

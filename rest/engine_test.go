@@ -343,3 +343,6 @@ func (m mockedRouter) SetNotFoundHandler(_ http.Handler) {
 
 func (m mockedRouter) SetNotAllowedHandler(_ http.Handler) {
 }
+
+func (m mockedRouter) SetCorsHandler(fn http.HandlerFunc, origins ...string) {
+}

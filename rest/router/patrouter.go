@@ -8,6 +8,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/search"
 	"github.com/zeromicro/go-zero/rest/httpx"
+	"github.com/zeromicro/go-zero/rest/internal/cors"
 	"github.com/zeromicro/go-zero/rest/pathvar"
 )
 
@@ -23,10 +24,16 @@ var (
 	ErrInvalidPath = errors.New("path must begin with '/'")
 )
 
+type corsConfig struct {
+	fn      http.HandlerFunc
+	origins []string
+}
+
 type patRouter struct {
 	trees      map[string]*search.Tree
 	notFound   http.Handler
 	notAllowed http.Handler
+	cors       *corsConfig
 }
 
 // NewRouter returns a httpx.Router.
@@ -57,6 +64,16 @@ func (pr *patRouter) Handle(method, reqPath string, handler http.Handler) error 
 }
 
 func (pr *patRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if pr.cors != nil {
+		cors.CheckAndSetHeaders(w, r, pr.cors.origins)
+		if pr.cors.fn != nil {
+			pr.cors.fn(w, r)
+		}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
 	reqPath := path.Clean(r.URL.Path)
 	if tree, ok := pr.trees[r.Method]; ok {
 		if result, ok := tree.Search(reqPath); ok {
@@ -88,6 +105,10 @@ func (pr *patRouter) SetNotFoundHandler(handler http.Handler) {
 
 func (pr *patRouter) SetNotAllowedHandler(handler http.Handler) {
 	pr.notAllowed = handler
+}
+
+func (pr *patRouter) SetCorsHandler(fn http.HandlerFunc, origins ...string) {
+	pr.cors = &corsConfig{fn: fn, origins: origins}
 }
 
 func (pr *patRouter) handleNotFound(w http.ResponseWriter, r *http.Request) {

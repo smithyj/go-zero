@@ -10,7 +10,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/handler"
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"github.com/zeromicro/go-zero/rest/internal/cors"
 	"github.com/zeromicro/go-zero/rest/router"
 )
 
@@ -105,18 +104,15 @@ func ToMiddleware(handler func(next http.Handler) http.Handler) Middleware {
 // WithCors returns a func to enable CORS for given origin, or default to all origins (*).
 func WithCors(origin ...string) RunOption {
 	return func(server *Server) {
-		server.router.SetNotAllowedHandler(cors.NotAllowedHandler(nil, origin...))
-		server.Use(cors.Middleware(nil, origin...))
+		server.router.SetCorsHandler(nil, origin...)
 	}
 }
 
 // WithCustomCors returns a func to enable CORS for given origin, or default to all origins (*),
 // fn lets caller customizing the response.
-func WithCustomCors(middlewareFn func(header http.Header), notAllowedFn func(http.ResponseWriter),
-	origin ...string) RunOption {
+func WithCustomCors(fn http.HandlerFunc, origin ...string) RunOption {
 	return func(server *Server) {
-		server.router.SetNotAllowedHandler(cors.NotAllowedHandler(notAllowedFn, origin...))
-		server.Use(cors.Middleware(middlewareFn, origin...))
+		server.router.SetCorsHandler(fn, origin...)
 	}
 }
 
