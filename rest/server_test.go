@@ -336,10 +336,8 @@ Port: 54321
 	svr, err := NewServer(cnf, WithRouter(rt))
 	assert.Nil(t, err)
 
-	opt := WithCustomCors(func(header http.Header) {
-		header.Set("foo", "bar")
-	}, func(w http.ResponseWriter) {
-		w.WriteHeader(http.StatusOK)
+	opt := WithCustomCors(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("foo", "bar")
 	}, "local")
 	opt(svr)
 }
